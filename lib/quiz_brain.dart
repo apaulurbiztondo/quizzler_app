@@ -1,17 +1,19 @@
-import 'package:flutter/material.dart';
 import 'package:quizzler_app/question.dart';
 
 class QuizBrain {
   final List<Question> _questions = [
     Question(
-        question: 'You can lead a cow down stairs but not up stairs.',
-        answer: false),
+      question: 'You can lead a cow down stairs but not up stairs.',
+      answer: false,
+    ),
     Question(
-        question: 'Approximately one quarter of human bones are in the feet.',
-        answer: true),
+      question: 'Approximately one quarter of human bones are in the feet.',
+      answer: true,
+    ),
     Question(
-        question: 'You can lead a cow down stairs but not up stairs.',
-        answer: true)
+      question: 'Cows can walk downstairs but not upstairs.',
+      answer: true,
+    ),
   ];
 
   List<Question> get questions => _questions;

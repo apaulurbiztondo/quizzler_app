@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:quizzler_app/quiz_brain.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
-QuizBrain quizBrain = QuizBrain();
-
 void main() => runApp(const Quizzler());
 
 class Quizzler extends StatelessWidget {
@@ -11,13 +9,15 @@ class Quizzler extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final QuizBrain quizBrain = QuizBrain();
+
     return MaterialApp(
       home: Scaffold(
         backgroundColor: Colors.grey.shade900,
-        body: const SafeArea(
+        body: SafeArea(
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10.0),
-            child: QuizPage(),
+            padding: const EdgeInsets.symmetric(horizontal: 10.0),
+            child: QuizPage(quizBrain: quizBrain),
           ),
         ),
       ),
@@ -26,20 +26,22 @@ class Quizzler extends StatelessWidget {
 }
 
 class QuizPage extends StatefulWidget {
-  const QuizPage({super.key});
+  final QuizBrain quizBrain;
+
+  const QuizPage({required this.quizBrain, Key? key}) : super(key: key);
 
   @override
   State<QuizPage> createState() => _QuizPageState();
 }
 
 class _QuizPageState extends State<QuizPage> {
-  int questionNumber = 0;
+  late int questionNumber = 0;
   List<Icon> scoreKeeper = [];
 
-  void checkAnswer(int questionNumber, bool correctAnswer) {
-    setState(() {
-      if (quizBrain.isNextQuestionAvailable(questionNumber)) {
-        if (correctAnswer == quizBrain.isCorrectAnswer(questionNumber)) {
+  void checkAnswer(bool correctAnswer) {
+    if (widget.quizBrain.isNextQuestionAvailable(questionNumber)) {
+      setState(() {
+        if (correctAnswer == widget.quizBrain.isCorrectAnswer(questionNumber)) {
           scoreKeeper.add(
             const Icon(
               Icons.check,
@@ -54,16 +56,22 @@ class _QuizPageState extends State<QuizPage> {
             ),
           );
         }
-        this.questionNumber++;
-      } else {
-        Alert(
-          context: context,
-          title: 'Finished!',
-          desc: 'You\'ve reached the end of the quiz.',
-        ).show();
-        this.questionNumber = 0;
-        scoreKeeper.clear();
-      }
+        questionNumber++;
+      });
+    } else {
+      Alert(
+        context: context,
+        title: 'No Question Found!',
+        desc: 'You\'ve reached the end of the quiz.',
+      ).show();
+      resetQuiz();
+    }
+  }
+
+  void resetQuiz() {
+    setState(() {
+      questionNumber = 0;
+      scoreKeeper.clear();
     });
   }
 
@@ -79,7 +87,7 @@ class _QuizPageState extends State<QuizPage> {
             padding: const EdgeInsets.all(10.0),
             child: Center(
               child: Text(
-                quizBrain.displayQuestion(questionNumber),
+                widget.quizBrain.displayQuestion(questionNumber),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 25.0,
@@ -97,7 +105,7 @@ class _QuizPageState extends State<QuizPage> {
                 backgroundColor: Colors.green,
               ),
               onPressed: () {
-                checkAnswer(questionNumber, true);
+                checkAnswer(true);
               },
               child: const Text(
                 'True',
@@ -114,7 +122,7 @@ class _QuizPageState extends State<QuizPage> {
                 backgroundColor: Colors.red,
               ),
               onPressed: () {
-                checkAnswer(questionNumber, false);
+                checkAnswer(false);
               },
               child: const Text(
                 'False',
@@ -130,12 +138,7 @@ class _QuizPageState extends State<QuizPage> {
               style: TextButton.styleFrom(
                 backgroundColor: Colors.blue,
               ),
-              onPressed: () {
-                setState(() {
-                  questionNumber = 0;
-                  scoreKeeper.clear();
-                });
-              },
+              onPressed: resetQuiz,
               child: const Text(
                 'Clear',
                 style: TextStyle(color: Colors.white, fontSize: 20.0),
